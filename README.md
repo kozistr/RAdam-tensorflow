@@ -23,7 +23,16 @@ In addition to explaining **why we should use warmup**, we also propose **RAdam*
 # if you wanna selectively disable updating weight-decayed weights
 
 optimizer = RAdamOptimizer(
-    ...
+    learning_rate=0.001,
+    beta1=0.9,
+    beta2=0.999,
+    epsilon=1e-8,
+    decay=0.,
+    warmup_proportion= 0.1,
+    min_lr= 0.,
+    weight_decay=0.,
+    exclude_from_weight_decay=['...'],
+    use_amsgrad=False,
 )
 ```
 
