@@ -15,37 +15,28 @@ class RAdamOptimizer(tf.train.Optimizer):
     """
 
     def __init__(self,
-                 learning_rate=0.001,
-                 final_lr=0.1,
-                 beta1=0.9,
-                 beta2=0.999,
-                 gamma=1e-3,
-                 epsilon=1e-8,
-                 amsbound=False,
-                 decay=0.,
-                 weight_decay=0.,
-                 exclude_from_weight_decay=None,
-                 use_locking=False, name="AdaBound"):
+                 learning_rate: float = 0.001,
+                 beta1: float = 0.9,
+                 beta2: float = 0.999,
+                 epsilon: float = 1e-8,
+                 decay: float = 0.,
+                 weight_decay: float = 0.,
+                 exclude_from_weight_decay: list = None,
+                 use_locking: bool = False,
+                 name: str = "RAdam"):
         super(RAdamOptimizer, self).__init__(use_locking, name)
 
-        if final_lr <= 0.:
-            raise ValueError("Invalid final learning rate : {}".format(final_lr))
         if not 0. <= beta1 < 1.:
             raise ValueError("Invalid beta1 value : {}".format(beta1))
         if not 0. <= beta2 < 1.:
             raise ValueError("Invalid beta2 value : {}".format(beta2))
-        if not 0. <= gamma < 1.:
-            raise ValueError("Invalid gamma value : {}".format(gamma))
         if epsilon <= 0.:
             raise ValueError("Invalid epsilon value : {}".format(epsilon))
 
         self._lr = learning_rate
         self._beta1 = beta1
         self._beta2 = beta2
-        self._final_lr = final_lr
-        self._gamma = gamma
         self._epsilon = epsilon
-        self._amsbound = amsbound
         self._decay = decay
         self._weight_decay = weight_decay
         self._exclude_from_weight_decay = exclude_from_weight_decay
@@ -63,13 +54,9 @@ class RAdamOptimizer(tf.train.Optimizer):
 
         bias_correction1 = 1. - (self._beta1 ** t)
         bias_correction2 = 1. - (self._beta2 ** t)
-        step_size = (lr * tf.sqrt(bias_correction2) / bias_correction1)
 
-        # Applies bounds on actual learning rate
-        # lr_scheduler cannot affect final_lr, this is a workaround to apply lr decay
-        final_lr = self._final_lr * lr / self._base_lr
-        lower_bound = final_lr * (1. - 1. / (self._gamma * t + 1.))
-        upper_bound = final_lr * (1. + 1. / (self._gamma * t))
+        # Compute the maximum length of the approximated SMA
+        p_inf = 2. / (1. - self._beta2) -  1.
 
         assignments = []
         for grad, param in grads_and_vars:
@@ -79,53 +66,40 @@ class RAdamOptimizer(tf.train.Optimizer):
             param_name = self._get_variable_name(param.name)
 
             m = tf.get_variable(
-                name=param_name + "/adabound_m",
+                name=param_name + "/radam_m",
                 shape=param.shape.as_list(),
                 dtype=tf.float32,
                 trainable=False,
                 initializer=tf.zeros_initializer())
             v = tf.get_variable(
-                name=param_name + "/adabound_v",
+                name=param_name + "/radam_v",
                 shape=param.shape.as_list(),
                 dtype=tf.float32,
                 trainable=False,
                 initializer=tf.zeros_initializer())
-            if self._amsbound:
-                v_hat = tf.get_variable(
-                    name=param_name + "/adabound_v_hat",
-                    shape=param.shape.as_list(),
-                    dtype=tf.float32,
-                    trainable=False,
-                    initializer=tf.zeros_initializer())
 
-            m_t = (
-                    tf.multiply(self._beta1, m) + tf.multiply(1. - self._beta1, grad))
             v_t = (
                     tf.multiply(self._beta2, v) + tf.multiply(1. - self._beta2, tf.square(grad)))
+            m_t = (
+                    tf.multiply(self._beta1, m) + tf.multiply(1. - self._beta1, grad))
+            m_t_hat = m_t / bias_correction1
 
-            if self._amsbound:
-                # Maintains the maximum of all 2nd moment running avg. till now
-                v_hat_t = tf.maximum(v_hat, v_t)
+            # Compute the length of the approximated SMA
+            p_t = p_inf - 2. * t * (self._beta2 ** t) / bias_correction2
 
-                # Use the max. for normalizing running avg. of gradient
-                denom = (tf.sqrt(v_hat_t) + self._epsilon)
+            if p_t > 4.:
+                v_t_hat = tf.sqrt(v_t / bias_correction2)
+                r_t = tf.sqrt(
+                    (p_t - 4.) * (p_t - 2.) * p_inf / ((p_inf - 4.) * (p_inf - 2.) * p_t)
+                )
+                p_t = param - lr * r_t * m_t_hat / v_t_hat
             else:
-                denom = (tf.sqrt(v_t) + self._epsilon)
-
-            step_size_p = step_size * tf.ones_like(denom)
-            step_size_p_bound = step_size_p / denom
-
-            lr_t = m_t * tf.clip_by_value(t=step_size_p_bound,
-                                          clip_value_min=lower_bound,
-                                          clip_value_max=upper_bound)
-            p_t = param - lr_t
+                p_t = param - lr * m_t_hat
 
             if self._do_use_weight_decay(param_name):
                 p_t += self._weight_decay * param
 
             update_list = [param.assign(p_t), m.assign(m_t), v.assign(v_t)]
-            if self._amsbound:
-                update_list.append(v_hat.assign(v_hat_t))
 
             assignments.extend(update_list)
 
