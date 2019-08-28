@@ -2,15 +2,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow as tf
 import argparse
 import os
 
+import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
-from adabound import AdaBoundOptimizer
 from radam import RAdamOptimizer
-
 
 w_init = tf.contrib.layers.variance_scaling_initializer(factor=3., mode='FAN_AVG', uniform=True)
 w_reg = tf.contrib.layers.l2_regularizer(5e-4)
@@ -36,10 +34,6 @@ def train(sess,
         )
         if optimizer_name == "radam":
             return RAdamOptimizer(learning_rate=learning_rate)
-        elif optimizer_name == "adabound":
-            return AdaBoundOptimizer(learning_rate=learning_rate)
-        elif optimizer_name == "amsbound":
-            return AdaBoundOptimizer(learning_rate=learning_rate, amsbound=True)
         elif optimizer_name == "adam":
             return tf.train.AdamOptimizer(learning_rate=learning_rate)
         elif optimizer_name == "sgd":
@@ -187,7 +181,7 @@ if __name__ == "__main__":
     parser.add_argument('--batch_size', required=False, type=int, default=128)
     parser.add_argument('--learning_rate', required=False, type=float, default=0.001)
     parser.add_argument('--optimizer', required=False, type=str, default="radam",
-                        choices=["adabound", "amsbound", "adam", "sgd", "momentum", "adagrad", "radam"])
+                        choices=["adam", "sgd", "momentum", "adagrad", "radam"])
     parser.add_argument('--dropout', required=False, type=float, default=0.5)
     parser.add_argument('--model_dir', required=False, type=str, default="./model/")
     parser.add_argument('--data_dir', required=False, type=str, default="./mnist/")
