@@ -6,9 +6,9 @@ This repo is based on pytorch impl [repo](https://github.com/LiyuanLucasLiu/RAda
 *WIP*
 
 # Explanation
-The learning rate warmup for Adam is a must-have trick for stable training in certain situations (or eps tuning). But the underlying mechanism is largely unknown. In our study, we suggest one fundamental cause is the large variance of the adaptive learning rates, and provide both theoretical and empirical support evidence.
+The learning rate warmup for Adam is a must-have trick for stable training in certain situations (or eps tuning). But the underlying mechanism is largely unknown. In our study, we suggest one fundamental cause is **the large variance of the adaptive learning rates**, and provide both theoretical and empirical support evidence.
 
-In addition to explaining why we should use warmup, we also propose RAdam, a theoretically sound variant of Adam.
+In addition to explaining **why we should use warmup**, we also propose **RAdam**, a theoretically sound variant of Adam.
 
 # Requirement
 * Python 3.x
