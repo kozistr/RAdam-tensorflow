@@ -3,6 +3,9 @@ On The Variance Of The Adaptive Learning Rate And Beyond in Tensorflow
 
 This repo is based on pytorch impl [repo](https://github.com/LiyuanLucasLiu/RAdam)
 
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/kozistr/RAdam-tensorflow.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/kozistr/RAdam-tensorflow/alerts/)
+[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/kozistr/RAdam-tensorflow.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/kozistr/RAdam-tensorflow/context:python)
+
 *WIP*
 
 # Explanation
