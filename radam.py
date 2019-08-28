@@ -3,8 +3,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow as tf
 import re
+
+import tensorflow as tf
 
 
 class RAdamOptimizer(tf.train.Optimizer):
@@ -20,8 +21,11 @@ class RAdamOptimizer(tf.train.Optimizer):
                  beta2: float = 0.999,
                  epsilon: float = 1e-8,
                  decay: float = 0.,
+                 warmup_proportion: float = 0.1,
+                 min_lr: float = 0.,
                  weight_decay: float = 0.,
                  exclude_from_weight_decay: list = None,
+                 use_amsgrad: bool = False,
                  use_locking: bool = False,
                  name: str = "RAdam"):
         super(RAdamOptimizer, self).__init__(use_locking, name)
@@ -38,8 +42,11 @@ class RAdamOptimizer(tf.train.Optimizer):
         self._beta2 = beta2
         self._epsilon = epsilon
         self._decay = decay
+        self._warmup_proportion = warmup_proportion
+        self._min_lr = min_lr
         self._weight_decay = weight_decay
         self._exclude_from_weight_decay = exclude_from_weight_decay
+        self._use_amsgrad = use_amsgrad
 
         self._base_lr = learning_rate
 
@@ -56,7 +63,10 @@ class RAdamOptimizer(tf.train.Optimizer):
         bias_correction2 = 1. - (self._beta2 ** t)
 
         # Compute the maximum length of the approximated SMA
-        p_inf = 2. / (1. - self._beta2) -  1.
+        sma_inf = 2. / (1. - self._beta2) - 1.
+
+        # Compute the length of the approximated SMA
+        sma_t = sma_inf - 2. * t * (self._beta2 ** t) / bias_correction2
 
         assignments = []
         for grad, param in grads_and_vars:
@@ -84,20 +94,20 @@ class RAdamOptimizer(tf.train.Optimizer):
                     tf.multiply(self._beta1, m) + tf.multiply(1. - self._beta1, grad))
             m_t_hat = m_t / bias_correction1
 
-            # Compute the length of the approximated SMA
-            p_t = p_inf - 2. * t * (self._beta2 ** t) / bias_correction2
-
-            if p_t > 4.:
-                v_t_hat = tf.sqrt(v_t / bias_correction2)
+            if sma_t > 4.:
+                v_t_hat = tf.sqrt(v_t / bias_correction2 + self._epsilon)
                 r_t = tf.sqrt(
-                    (p_t - 4.) * (p_t - 2.) * p_inf / ((p_inf - 4.) * (p_inf - 2.) * p_t)
+                    (sma_t - 4.) * (sma_t - 2.) * sma_inf /
+                    ((sma_inf - 4.) * (sma_inf - 2.) * sma_t)
                 )
-                p_t = param - lr * r_t * m_t_hat / v_t_hat
+                p_t = r_t * m_t_hat / v_t_hat
             else:
-                p_t = param - lr * m_t_hat
+                p_t = m_t_hat
 
             if self._do_use_weight_decay(param_name):
                 p_t += self._weight_decay * param
+
+            p_t = param - lr * p_t
 
             update_list = [param.assign(p_t), m.assign(m_t), v.assign(v_t)]
 
