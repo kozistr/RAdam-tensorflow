@@ -32,7 +32,6 @@ optimizer = RAdamOptimizer(
     epsilon=1e-8,
     decay=0.,
     warmup_proportion= 0.1,
-    min_lr= 0.,
     weight_decay=0.,
     exclude_from_weight_decay=['...'],
     use_amsgrad=False,
@@ -46,6 +45,10 @@ For `RAdam` optimizer,
 python3 mnist_test --optimizer "radam"
 ```
 
+## To Do
+* impl warmup stage
+* impl amsgrad
+
 ## Results
 
 Testing Accuracy & Loss among the optimizers on the several data sets w/ under same condition.
@@ -57,8 +60,6 @@ Testing Accuracy & Loss among the optimizers on the several data sets w/ under s
 *Optimizer* | *Test Acc* | *Time* | *Etc* |
 :---: | :---: | :---: | :---: |
 RAdam | **xx.xx%** | m s | |
-AdaBound | **97.77%** | 5m 45s |  |
-AMSBound | 97.72% | 5m 52s |  |
 Adam | 97.62% | 4m 18s |  |
 AdaGrad | 90.15% | **4m 07s** |  |
 SGD | 87.88% | 5m 26s | |
