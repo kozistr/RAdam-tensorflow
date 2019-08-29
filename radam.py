@@ -94,15 +94,14 @@ class RAdamOptimizer(tf.train.Optimizer):
                     tf.multiply(self._beta1, m) + tf.multiply(1. - self._beta1, grad))
             m_t_hat = m_t / bias_correction1
 
-            if sma_t > 4.:
-                v_t_hat = tf.sqrt(v_t / bias_correction2 + self._epsilon)
-                r_t = tf.sqrt(
+            p_t = tf.cond(
+                sma_t > 4.,
+                lambda: tf.sqrt(
                     (sma_t - 4.) * (sma_t - 2.) * sma_inf /
                     ((sma_inf - 4.) * (sma_inf - 2.) * sma_t)
-                )
-                p_t = r_t * m_t_hat / v_t_hat
-            else:
-                p_t = m_t_hat
+                ) * m_t_hat / tf.sqrt(v_t / bias_correction2 + self._epsilon),
+                lambda: m_t_hat
+            )
 
             if self._do_use_weight_decay(param_name):
                 p_t += self._weight_decay * param
