@@ -59,11 +59,13 @@ Testing Accuracy & Loss among the optimizers on the several data sets w/ under s
 
 *Optimizer* | *Test Acc* | *Time* | *Etc* |
 :---: | :---: | :---: | :---: |
-RAdam | **xx.xx%** | m s | |
+RAdam | **97.68%** | **2m 29s** | |
 Adam | 97.62% | 4m 18s |  |
-AdaGrad | 90.15% | **4m 07s** |  |
+AdaGrad | 90.15% | 4m 07s |  |
 SGD | 87.88% | 5m 26s | |
 Momentum | 87.88% | 4m 26s | w/ nestrov |
+
+% `RAdam` tested on GTX 1080 ti 11GB / `Others` tested on GTX 1060 6GB
 
 # Citation
 
