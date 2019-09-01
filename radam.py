@@ -1,4 +1,4 @@
-"""AdaBound for Tensorflow."""
+"""RAdamOptimizer implementation `in Tensorflow."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -22,7 +22,6 @@ class RAdamOptimizer(tf.train.Optimizer):
                  epsilon: float = 1e-6,
                  decay: float = 0.,
                  warmup_proportion: float = 0.1,
-                 min_lr: float = 0.,
                  weight_decay: float = 0.,
                  exclude_from_weight_decay: list = None,
                  amsgrad: bool = False,
@@ -43,7 +42,6 @@ class RAdamOptimizer(tf.train.Optimizer):
         self._epsilon = epsilon
         self._decay = decay
         self._warmup_proportion = warmup_proportion
-        self._min_lr = min_lr
         self._weight_decay = weight_decay
         self._exclude_from_weight_decay = exclude_from_weight_decay
         self._amsgrad = amsgrad
