@@ -6,8 +6,6 @@ This repo is based on pytorch impl [repo](https://github.com/LiyuanLucasLiu/RAda
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/kozistr/RAdam-tensorflow.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/kozistr/RAdam-tensorflow/alerts/)
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/kozistr/RAdam-tensorflow.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/kozistr/RAdam-tensorflow/context:python)
 
-*WIP*
-
 # Explanation
 The learning rate warmup for Adam is a must-have trick for stable training in certain situations (or eps tuning). But the underlying mechanism is largely unknown. In our study, we suggest one fundamental cause is **the large variance of the adaptive learning rates**, and provide both theoretical and empirical support evidence.
 
@@ -29,12 +27,12 @@ optimizer = RAdamOptimizer(
     learning_rate=0.001,
     beta1=0.9,
     beta2=0.999,
-    epsilon=1e-8,
+    epsilon=1e-6,
     decay=0.,
     warmup_proportion= 0.1,
     weight_decay=0.,
     exclude_from_weight_decay=['...'],
-    use_amsgrad=False,
+    amsgrad=False,
 )
 ```
 
@@ -47,7 +45,6 @@ python3 mnist_test --optimizer "radam"
 
 ## To Do
 * impl warmup stage
-* impl amsgrad
 
 ## Results
 
