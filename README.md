@@ -7,21 +7,23 @@ This repo is based on pytorch impl [repo](https://github.com/LiyuanLucasLiu/RAda
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/kozistr/RAdam-tensorflow.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/kozistr/RAdam-tensorflow/context:python)
 
 # Explanation
-The learning rate warmup for Adam is a must-have trick for stable training in certain situations (or eps tuning). But the underlying mechanism is largely unknown. In our study, we suggest one fundamental cause is **the large variance of the adaptive learning rates**, and provide both theoretical and empirical support evidence.
+The learning rate warm-up for Adam is a must-have trick for stable training in certain situations (or eps tuning). But the underlying mechanism is largely unknown. In our study, we suggest one fundamental cause is **the large variance of the adaptive learning rates**, and provide both theoretical and empirical support evidence.
 
-In addition to explaining **why we should use warmup**, we also propose **RAdam**, a theoretically sound variant of Adam.
+In addition to explaining **why we should use warm-up**, we also propose **RAdam**, a theoretically sound variant of Adam.
 
-# Requirement
+# Requirements
 * Python 3.x
 * Tensorflow 1.x (maybe 2.x)
 
 ## Usage
 
 ```python
-# learning can be either a scalar or a tensor
+# learning rate can be either a scalar or a tensor
 
 # use exclude_from_weight_decay feature, 
 # if you wanna selectively disable updating weight-decayed weights
+
+from radam import RAdamOptimizer
 
 optimizer = RAdamOptimizer(
     learning_rate=0.001,
